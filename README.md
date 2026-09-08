@@ -9,13 +9,13 @@ ESP8266 → Google Apps Script → Google 試算表 → GitHub Pages 圓形儀�
 ```
 
 - `google-apps-script/Code.gs`：Google 試算表接收及查詢 API。
-- `firmware/dht_google_upload/`：每五分鐘喚醒並上傳的 ESP8266 韌體。
+- `firmware/dht_google_upload/`：保持 Wi-Fi 連線並每分鐘上傳的 ESP8266 韌體。
 - `docs/`：可直接發布至 GitHub Pages 的圓形指針面板。
 - `firmware/dht_google_upload/secrets.local.h`：本機 Wi-Fi、部署網址及裝置金鑰；已排除 Git 追蹤。
 
 先依照 [Google 設定步驟](google-apps-script/設定步驟.md)部署 Apps Script。取得 `/exec` 網址與裝置金鑰後，填入本機 `secrets.local.h`，並將 `/exec` 網址填入 `docs/index.html` 的 `GOOGLE_SCRIPT_URL`。
 
-深度睡眠定時喚醒需要將 NodeMCU 的 **D0（GPIO16）接到 RST**。初次上傳與除錯時可先不接，確認可正常上傳後再接線。
+目前雲端韌體不使用深度睡眠，因此不需要連接 D0 與 RST。NodeMCU 會保持開機並每 60 秒上傳一次，適合 USB 或穩定外接電源；使用電池時的續航會比深度睡眠模式短。
 
 ## USB 本機模式
 

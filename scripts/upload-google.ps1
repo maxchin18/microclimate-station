@@ -22,4 +22,4 @@ try {
 } finally {
     Remove-Item -LiteralPath $PauseFile -Force -ErrorAction SilentlyContinue
 }
-Write-Output 'Cloud firmware uploaded. Connect D0 to RST for timed wake-up.'
+Write-Output 'Cloud firmware uploaded. It stays awake and uploads every 60 seconds; D0-to-RST is not required.'
