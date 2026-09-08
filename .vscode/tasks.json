@@ -2,7 +2,8 @@
   "version": "2.0.0",
   "tasks": [
     { "label": "編譯 DHT11 韌體", "type": "process", "command": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/build.ps1"], "group": {"kind": "build", "isDefault": true}, "problemMatcher": ["$gcc"] },
-    { "label": "上傳 DHT11 韌體", "type": "process", "command": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/upload.ps1"], "problemMatcher": [] },
+    { "label": "上傳 DHT11 USB 韌體", "type": "process", "command": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/upload.ps1"], "problemMatcher": [] },
+    { "label": "上傳 DHT11 Google 雲端韌體", "type": "process", "command": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/upload-google.ps1"], "problemMatcher": [] },
     { "label": "啟動溫溼度監測畫面", "type": "process", "command": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/start-monitor.ps1"], "problemMatcher": [] }
   ]
 }

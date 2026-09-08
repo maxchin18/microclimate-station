@@ -41,7 +41,18 @@ void setup() {
       https.end();
     }
   } else {
-    Serial.println("WIFI_CONNECT_FAILED");
+    Serial.printf("WIFI_CONNECT_FAILED status=%d\n", WiFi.status());
+    bool targetVisible = false;
+    const int count = WiFi.scanNetworks();
+    for (int i = 0; i < count; ++i) {
+      if (WiFi.SSID(i) == WIFI_SSID) {
+        targetVisible = true;
+        Serial.printf("TARGET_VISIBLE=YES RSSI=%d CHANNEL=%d\n", WiFi.RSSI(i), WiFi.channel(i));
+        break;
+      }
+    }
+    if (!targetVisible) Serial.println("TARGET_VISIBLE=NO (ESP8266 supports 2.4 GHz only)");
+    WiFi.scanDelete();
   }
 
   WiFi.disconnect(true);

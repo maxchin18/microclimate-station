@@ -20,7 +20,7 @@
 </main>
 <script>
 const $=id=>document.getElementById(id);let samples=[];
-const GOOGLE_SCRIPT_URL='__GOOGLE_SCRIPT_URL__';
+const GOOGLE_SCRIPT_URL='https://script.google.com/macros/s/AKfycbwj9kLu8I7NeEfBzHgJScWzg_Rylt0ntJBsZvSKghmegvGOOw7cKHC9aLiGNiUIq4Z_/exec';
 function createDial(id,max,caption){
  const dial=$(id);let markup='<circle cx="150" cy="125" r="109" fill="none" stroke="currentColor" stroke-opacity=".08"/>';
  const xy=(angle,r)=>{const a=angle*Math.PI/180;return [150+Math.sin(a)*r,125-Math.cos(a)*r]};
