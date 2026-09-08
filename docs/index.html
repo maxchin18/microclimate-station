@@ -14,7 +14,7 @@
     <div class="mode-strip" aria-hidden="true"><span class="mode active">☀</span><span class="mode">☁</span><span class="mode">☾</span></div>
   </section>
 </section>
-<section class="lower"><section class="chart-panel card"><div class="chart-heading"><div><h2>環境的細微變化</h2><p>最近 10 分鐘 · 連線後自動繪製</p></div><div class="legend"><span>● 溫度 °C</span><span>● 溼度 %</span></div></div><div class="plot"><canvas id="chart" role="img" aria-label="最近十分鐘溫溼度折線圖"></canvas><div class="empty" id="empty">等待第一筆實際讀值<br>接上 USB 並上傳韌體後，資料會出現在這裡。</div></div><div class="bottom"><span id="updated">最後更新 —</span><button class="export" id="export" disabled>匯出 CSV ↓</button></div></section>
+<section class="lower"><section class="chart-panel card"><div class="chart-heading"><div><h2>環境的細微變化</h2><p>最近 10 分鐘 · 連線後自動繪製</p></div><div class="legend"><span>● 溫度 °C</span><span>● 溼度 %</span></div></div><div class="plot"><canvas id="chart" role="img" aria-label="最近十分鐘溫溼度折線圖"></canvas><div class="empty" id="empty">等待第一筆實際讀值<br>ESP8266 透過 Wi-Fi 上傳後，資料會出現在這裡。</div></div><div class="bottom"><span id="updated">最後更新 —</span><button class="export" id="export" disabled>匯出 CSV ↓</button></div></section>
 <aside class="setup card"><h2>雲端觀測站</h2><p>每 5 分鐘喚醒、量測並安全上傳。</p><div class="steps"><div class="step"><b>01</b><span>感應器讀取<br>溫度與相對溼度</span></div><div class="step"><b>02</b><span>Wi-Fi 加密傳送<br>Google 試算表保存</span></div><div class="step"><b>03</b><span>網頁自動更新<br>離線時標示時間</span></div></div></aside></section>
 <footer class="footer"><span>CLOUD SENSOR STATION / 僅顯示實測資料</span><span>GOOGLE SHEETS / LATEST 1,440 SAMPLES</span></footer>
 </main>
