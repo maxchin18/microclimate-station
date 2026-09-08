@@ -1,0 +1,8 @@
+__pycache__/
+.runtime/
+**/secrets.local.h
+build/
+*.log
+tools.local.json
+arduino-cli.yaml
+環境設定紀錄.md

@@ -1,0 +1,5 @@
+{
+  "cli": "C:\\path\\to\\arduino-cli.exe",
+  "python": "C:\\path\\to\\venv\\Scripts\\python.exe",
+  "buildRoot": "C:/path/to/ArduinoEnv/build"
+}
