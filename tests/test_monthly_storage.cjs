@@ -1,0 +1,21 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const sheets=[];
+function sheet(name,rows=[]){return {getName:()=>name,rows,getLastRow(){return rows.length},appendRow(row){rows.push(row)},setFrozenRows(){},setColumnWidth(){},getRange(start,col,count){return {setNumberFormat(){},getValues:()=>rows.slice(start-1,start-1+count)}}};}
+const book={getSheets:()=>sheets,getSheetByName:name=>sheets.find(s=>s.getName()===name),insertSheet(name){const s=sheet(name);sheets.push(s);return s},setSpreadsheetTimeZone(){}};
+const context={Date,console,Utilities:{formatDate(date,tz){assert.equal(tz,'Asia/Taipei');return new Date(date.getTime()+8*3600000).toISOString().slice(0,7)}},PropertiesService:{getScriptProperties:()=>({getProperty:key=>key==='DEVICE_API_KEY'?'test-key':'book'})},SpreadsheetApp:{openById:()=>book},LockService:{getScriptLock:()=>({waitLock(){},releaseLock(){}})},ContentService:{MimeType:{JSON:'json',JAVASCRIPT:'js'},createTextOutput:text=>({text,setMimeType(){return this}})}};
+vm.createContext(context);vm.runInContext(fs.readFileSync('google-apps-script/Code.gs','utf8'),context);
+const before=new Date('2026-09-30T15:59:59Z'),after=new Date('2026-09-30T16:00:00Z');
+const sep=context.getMonthlySheet_(book,before),oct=context.getMonthlySheet_(book,after);
+assert.equal(sep.getName(),'感測資料_2026-09');assert.equal(oct.getName(),'感測資料_2026-10');
+assert.equal(context.getMonthlySheet_(book,after),oct);assert.equal(oct.rows.length,1);
+const legacy=sheet('感測資料',[['header'],[new Date('2026-09-01Z'),'esp',25,60]]);sheets.push(legacy);
+sep.appendRow([before,'esp',26,61]);oct.appendRow([after,'esp',27,62]);
+assert.deepEqual(Array.from(context.getRecentRows_(book),r=>r[2]),[25,26,27]);
+for(let i=0;i<1500;i++)oct.appendRow([new Date(after.getTime()+i*60000),'esp',28,63]);
+assert.equal(context.getRecentRows_(book).length,1440);assert.equal(legacy.rows.length,2);
+assert.equal(JSON.parse(context.doGet({parameter:{format:'json'}}).text).history.length,1440);
+assert.match(context.doGet({parameter:{format:'json',callback:'receiveStationData'}}).text,/^receiveStationData\(/);
+assert.equal(JSON.parse(context.doPost({postData:{contents:JSON.stringify({api_key:'test-key',temperature:29,humidity:70})}}).text).ok,true);
+assert.equal(JSON.parse(context.doPost({postData:{contents:'{}'}}).text).error,'UNAUTHORIZED');
+assert.equal(oct.rows.length,1502,'old monthly data preserved');
+console.log('PASS: Taiwan month boundary, idempotent creation, legacy preservation, cross-month history, limit, JSONP and upload.');

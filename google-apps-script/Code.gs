@@ -1,15 +1,11 @@
 const SHEET_NAME = '感測資料';
-const MAX_ROWS = 50000;
+const STATION_TIME_ZONE = 'Asia/Taipei';
+const HISTORY_LIMIT = 1440;
 
 /** 第一次貼上程式後手動執行一次，建立工作表與裝置金鑰。 */
 function setupStation() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = book.getSheetByName(SHEET_NAME);
-  if (!sheet) sheet = book.insertSheet(SHEET_NAME);
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['時間', '裝置', '溫度 °C', '相對溼度 %', 'Wi-Fi RSSI dBm', '電池 V']);
-    sheet.setFrozenRows(1);
-  }
+  getMonthlySheet_(book, new Date());
   const properties = PropertiesService.getScriptProperties();
   properties.setProperty('SPREADSHEET_ID', book.getId());
   let apiKey = properties.getProperty('DEVICE_API_KEY');
@@ -38,14 +34,14 @@ function doPost(e) {
     const lock = LockService.getScriptLock();
     lock.waitLock(10000);
     try {
-      const sheet = getSheet_();
+      const receivedAt = new Date();
+      const sheet = getMonthlySheet_(getBook_(), receivedAt);
       sheet.appendRow([
-        new Date(), String(data.device_id || 'esp8266-01').slice(0, 64),
+        receivedAt, String(data.device_id || 'esp8266-01').slice(0, 64),
         temperature, humidity,
         data.rssi == null ? '' : Number(data.rssi),
         data.battery == null ? '' : Number(data.battery)
       ]);
-      if (sheet.getLastRow() > MAX_ROWS + 1) sheet.deleteRows(2, 1000);
     } finally {
       lock.releaseLock();
     }
@@ -60,11 +56,7 @@ function doGet(e) {
   if (!e || e.parameter.format !== 'json') {
     return ContentService.createTextOutput('微氣候觀測站 Google 接收服務運作中');
   }
-  const sheet = getSheet_();
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return json_({ok: true, history: []});
-  const start = Math.max(2, lastRow - 1439);
-  const rows = sheet.getRange(start, 1, lastRow - start + 1, 6).getValues();
+  const rows = getRecentRows_(getBook_());
   return json_({
     ok: true,
     history: rows.map(row => ({
@@ -75,10 +67,46 @@ function doGet(e) {
   }, e.parameter.callback);
 }
 
-function getSheet_() {
+function getBook_() {
   const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
   if (!id) throw new Error('請先執行 setupStation');
-  return SpreadsheetApp.openById(id).getSheetByName(SHEET_NAME);
+  return SpreadsheetApp.openById(id);
+}
+
+/** 新月份第一筆上傳時建立分頁；舊分頁和原始「感測資料」均保留。 */
+function getMonthlySheet_(book, receivedAt) {
+  const name = SHEET_NAME + '_' + Utilities.formatDate(receivedAt, STATION_TIME_ZONE, 'yyyy-MM');
+  let sheet = book.getSheetByName(name);
+  if (!sheet) {
+    book.setSpreadsheetTimeZone(STATION_TIME_ZONE);
+    sheet = book.insertSheet(name);
+  }
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['時間', '裝置', '溫度 °C', '相對溼度 %', 'Wi-Fi RSSI dBm', '電池 V']);
+    sheet.setFrozenRows(1);
+    sheet.getRange('A:A').setNumberFormat('yyyy/mm/dd hh:mm:ss');
+    sheet.setColumnWidth(1, 180);
+  }
+  return sheet;
+}
+
+/** 每張分頁最多讀取尾端 1,440 筆，合併排序以維持跨月及舊版相容。 */
+function getRecentRows_(book) {
+  let rows = [];
+  const monthly = book.getSheets().filter(sheet => /^感測資料_\d{4}-\d{2}$/.test(sheet.getName()))
+    .sort((a, b) => b.getName().localeCompare(a.getName()));
+  for (const sheet of monthly) {
+    const count = Math.min(HISTORY_LIMIT - rows.length, Math.max(0, sheet.getLastRow() - 1));
+    if (count) rows = rows.concat(sheet.getRange(sheet.getLastRow() - count + 1, 1, count, 6).getValues());
+    if (rows.length >= HISTORY_LIMIT) break;
+  }
+  const legacy = book.getSheetByName(SHEET_NAME);
+  if (legacy && legacy.getLastRow() > 1) {
+    const count = Math.min(HISTORY_LIMIT, legacy.getLastRow() - 1);
+    rows = rows.concat(legacy.getRange(legacy.getLastRow() - count + 1, 1, count, 6).getValues());
+  }
+  return rows.filter(row => Number.isFinite(new Date(row[0]).getTime()))
+    .sort((a,b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()).slice(-HISTORY_LIMIT);
 }
 
 function json_(value, callback) {
